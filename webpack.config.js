@@ -16,8 +16,8 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            "presets" : [["env", {"modules": false}], "react"],
-            "plugins": ["react-hot-loader/babel"]
+            presets: [['env', {'modules': false}], 'react'],
+            plugins: ['react-hot-loader/babel']
           }
         },
         exclude: /node_modules/,
@@ -33,10 +33,11 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin()
   ],
   devServer: {
-      contentBase: './examples',
-      hot: true
-    },
+    contentBase: './examples',
+    hot: true
+  },
   resolve: {
     extensions: ['.js', '.jsx'],
   },
+  devtool: 'eval-source-map' // Add this line to enable source maps
 };
