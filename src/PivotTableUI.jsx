@@ -230,6 +230,8 @@ export class Dropdown extends React.PureComponent {
 class PivotTableUI extends React.PureComponent {
   constructor(props) {
     super(props);
+    console.log("props");
+    console.log(props);
     this.state = {
       unusedOrder: [],
       zIndices: {},
@@ -238,6 +240,7 @@ class PivotTableUI extends React.PureComponent {
       attrValues: {},
       materializedInput: [],
     };
+
   }
 
   componentDidMount() {
@@ -525,10 +528,12 @@ class PivotTableUI extends React.PureComponent {
           {...update(this.props, {
             data: {$set: this.state.materializedInput},
           })}
+          options={this.props.options}
         />
       </td>
     );
-
+console.log("outputCell");
+console.log(outputCell);
     if (horizUnused) {
       return (
         <table className="pvtUi">
@@ -576,6 +581,7 @@ PivotTableUI.propTypes = Object.assign({}, PivotTable.propTypes, {
   hiddenFromDragDrop: PropTypes.arrayOf(PropTypes.string),
   unusedOrientationCutoff: PropTypes.number,
   menuLimit: PropTypes.number,
+  options: PropTypes.string, 
 });
 
 PivotTableUI.defaultProps = Object.assign({}, PivotTable.defaultProps, {

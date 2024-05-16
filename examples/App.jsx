@@ -32,6 +32,7 @@ class PivotTableUISmartWrapper extends React.PureComponent {
                 {...this.state.pivotState}
                 onChange={s => this.setState({pivotState: s})}
                 unusedOrientationCutoff={Infinity}
+                options={["#f0575417","#f05754"]}
             />
         );
     }
@@ -46,9 +47,9 @@ export default class App extends React.Component {
                 data: tips,
                 rows: ['Payer Gender'],
                 cols: ['Party Size'],
-                aggregatorName: 'Sum over Sum',
+                aggregatorName: 'Count',
                 vals: ['Tip', 'Total Bill'],
-                rendererName: 'Grouped Column Chart',
+                rendererName: 'Table',
                 sorters: {
                     Meal: sortAs(['Lunch', 'Dinner']),
                     'Day of Week': sortAs([

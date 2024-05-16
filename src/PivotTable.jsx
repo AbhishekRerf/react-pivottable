@@ -21,7 +21,6 @@ PivotTable.propTypes = Object.assign({}, PivotData.propTypes, {
   rendererName: PropTypes.string,
   renderers: PropTypes.objectOf(PropTypes.func),
 });
-
 PivotTable.defaultProps = Object.assign({}, PivotData.defaultProps, {
   rendererName: 'Table',
   renderers: TableRenderers,
