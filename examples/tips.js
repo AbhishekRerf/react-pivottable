@@ -222,7 +222,7 @@ export default [
 [30.14,3.09,"Female","Smoker","Saturday","Dinner",4],
 [12.16,2.2,"Male","Smoker","Friday","Lunch",2],
 [13.42,3.48,"Female","Smoker","Friday","Lunch",2],
-[8.58,1.92,"Male","Smoker","Friday","Lunch",1],
+[8.58,1.92,"Male","Non-Smoker","Friday","Lunch",1],
 [15.98,3,"Female","Non-Smoker","Friday","Lunch",3],
 [13.42,1.58,"Male","Smoker","Friday","Lunch",2],
 [16.27,2.5,"Female","Smoker","Friday","Lunch",2],

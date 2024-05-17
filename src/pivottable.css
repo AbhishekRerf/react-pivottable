@@ -17,19 +17,18 @@
 
 table.pvtTable {
     border-collapse: collapse;
-    font-feature-settings: 'clig' off, 'liga' off;
-    font-family: var(--font-family);
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: none;
+    -webkit-font-feature-settings: "clig" off, "liga" off;
+    font-feature-settings: "clig" off, "liga" off;
     font-size: 13px;
-    font-style: var(--font-style-normal);
-    font-weight: var(--font-weight-400);
     line-height: 16px;
-    letter-spacing: 0.3px;
-    color: #4F4B53 !important;
+    --bs-table-bg: none !important;
 }
 table.pvtTable thead tr th,
 table.pvtTable tbody tr th {
     background-color: #ebf0f8;
-    border: 1px solid #c8d4e3;
     font-size: 8pt;
     padding: 5px;
 }

@@ -532,8 +532,6 @@ class PivotTableUI extends React.PureComponent {
         />
       </td>
     );
-console.log("outputCell");
-console.log(outputCell);
     if (horizUnused) {
       return (
         <table className="pvtUi">

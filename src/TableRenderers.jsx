@@ -54,8 +54,28 @@ function redColorScaleGenerator(values) {
 
 function makeRenderer(opts = {}) {
   class TableRenderer extends React.PureComponent {
+    constructor(props) {
+      super(props);
+      this.state = {
+        sortColumn: null,
+        sortOrder: 'asc', // Initial sort order
+        sortedData: [],
+      };
+    }
+  
+
+
     render() {
-      const pivotData = new PivotData(this.props);
+      const { sortColumn, sortOrder,sortedData } = this.state;
+      let pivotData;
+      if(this.props.data.length>0 && sortedData.length>0){
+        const updatedProps = Object.assign({}, this.props, { data: sortedData });
+         pivotData = new PivotData(updatedProps);
+      }
+      else{
+      pivotData = new PivotData(this.props);
+      }
+
       console.log("pivotData")
       console.log(pivotData)
       const colAttrs = pivotData.props.cols;
@@ -63,12 +83,20 @@ function makeRenderer(opts = {}) {
       const rowKeys = pivotData.getRowKeys();
       const colKeys = pivotData.getColKeys();
       const grandTotalAggregator = pivotData.getAggregator([], []);
-      let oddRowColor= pivotData.props.options[0];
-      let headerColor= pivotData.props.options[1];
+      let oddRowColor= pivotData.props.options.ODD_ROW_COLOR;
+      let headerBgColor= pivotData.props.options.HEADER_BG_COLOR;
+      let evenRowColor= pivotData.props.options.EVEN_ROW_COLOR;
+      let headerTextColor= pivotData.props.options.HEADER_TEXT_COLOR;
+      let borderStyle= pivotData.props.options.BORDER_STYLE;
+      let banded= pivotData.props.options.BANDED;
+      let bandedRow= pivotData.props.options.BANDED_ROW;
+      let bandedColumn= pivotData.props.options.BANDED_COL;
 
       let valueCellColors = () => {};
       let rowTotalColors = () => {};
       let colTotalColors = () => {};
+
+      
       if (opts.heatmapMode) {
         const colorScaleGenerator = this.props.tableColorScaleGenerator;
         const rowTotalValues = colKeys.map(x =>
@@ -136,6 +164,29 @@ function makeRenderer(opts = {}) {
             }
           : null;
 
+          const handleSort = (column) => {
+            const { sortColumn, sortOrder } = this.state;
+            let newSortOrder = 'asc';
+          
+            // Toggle sort order if the same column is clicked
+            if (sortColumn === column && sortOrder === 'asc') {
+              newSortOrder = 'desc';
+            }
+          
+            const sortedData = [...pivotData.props.data].sort((a, b) => {
+              if (a[column] < b[column]) return newSortOrder === 'asc' ? -1 : 1;
+              if (a[column] > b[column]) return newSortOrder === 'asc' ? 1 : -1;
+              return 0;
+            });
+          
+            // Update state with sorted data and column
+            this.setState({
+              sortColumn: column,
+              sortOrder: newSortOrder,
+              sortedData: sortedData,
+            });
+          };
+
       return (
         <table className="pvtTable">
           <thead>
@@ -143,9 +194,15 @@ function makeRenderer(opts = {}) {
               return (
                 <tr key={`colAttr${j}`}>
                   {j === 0 && rowAttrs.length !== 0 && (
-                    <th colSpan={rowAttrs.length} rowSpan={colAttrs.length} />
+                    <th style={{ backgroundColor: headerBgColor,border:"1px solid #fff",color:`${headerTextColor}` }} colSpan={rowAttrs.length} rowSpan={colAttrs.length} />
                   )}
-                  <th className="pvtAxisLabel" style={{ backgroundColor: headerColor }}>{c}</th>
+                  <th  onClick={() => handleSort(c)} className="pvtAxisLabel" style={{ backgroundColor: headerBgColor,border:"1px solid #fff",color:`${headerTextColor}` }}>{c}
+                  {sortColumn === c && (
+                  <span style={{ marginLeft: '0.5em' }}>
+                    {sortOrder === 'asc' ? '▲' : '▼'} {/* Arrow icon */}
+                  </span>
+                )}
+                </th>
                   {colKeys.map(function(colKey, i) {
                     const x = spanSize(colKeys, i, j);
                     if (x === -1) {
@@ -161,7 +218,7 @@ function makeRenderer(opts = {}) {
                             ? 2
                             : 1
                         }
-                        
+                        style={{ backgroundColor: headerBgColor,border:"1px solid #fff",color:`${headerTextColor}` }}
                       >
                         {colKey[j]}
                       </th>
@@ -170,6 +227,7 @@ function makeRenderer(opts = {}) {
 
                   {j === 0 && (
                     <th
+                      style={{ backgroundColor: headerBgColor,border:"1px solid #fff",color:`${headerTextColor}` }}
                       className="pvtTotalLabel"
                       rowSpan={
                         colAttrs.length + (rowAttrs.length === 0 ? 0 : 1)
@@ -186,12 +244,17 @@ function makeRenderer(opts = {}) {
               <tr>
                 {rowAttrs.map(function(r, i) {
                   return (
-                    <th className="pvtAxisLabel" style={{ backgroundColor: headerColor }} key={`rowAttr${i}`}>
+                    <th className="pvtAxisLabel" onClick={() => handleSort(r)} style={{ backgroundColor: headerBgColor,border:"1px solid #fff",color:`${headerTextColor}` }} key={`rowAttr${i}`}>
                       {r}
+                      {sortColumn === r && (
+                  <span style={{ marginLeft: '0.5em' }}>
+                    {sortOrder === 'asc' ? '▲' : '▼'} {/* Arrow icon */}
+                  </span>
+                )}
                     </th>
                   );
                 })}
-                <th className="pvtTotalLabel">
+                <th className="pvtTotalLabel" style={{ backgroundColor: headerBgColor,border:"1px solid #fff",color:`${headerTextColor}` }}>
                   {colAttrs.length === 0 ? 'Totals' : null}
                 </th>
               </tr>
@@ -202,7 +265,7 @@ function makeRenderer(opts = {}) {
             {rowKeys.map(function(rowKey, i) {
               const totalAggregator = pivotData.getAggregator(rowKey, []);
               return (
-                <tr key={`rowKeyRow${i}`}>
+                <tr role='row' className={`bandedNo${i}`} key={`rowKeyRow${i}`}>
                   {rowKey.map(function(txt, j) {
                     const x = spanSize(rowKeys, i, j);
                     if (x === -1) {
@@ -219,7 +282,10 @@ function makeRenderer(opts = {}) {
                             : 1
                         }
                         style={{
-                          backgroundColor: j%2===0 ? oddRowColor :"#fff" }
+                          backgroundColor: banded ==="YES" && bandedColumn==="YES" && j%2===0 ? oddRowColor : evenRowColor,
+                          borderBottom: borderStyle === "VH" || borderStyle === "V" ? `1px solid ${headerBgColor}` : "none",
+                          borderLeft: borderStyle === "VH" || borderStyle === "H" ? `1px solid ${headerBgColor}` : "none",
+                          borderRight: borderStyle === "VH" || borderStyle === "H" ? `1px solid ${headerBgColor}` : "none", }
                         }
                         
                       >
@@ -241,7 +307,11 @@ function makeRenderer(opts = {}) {
                         style={Object.assign(
                           {},
                           valueCellColors(rowKey, colKey, aggregator.value()),
-                          { backgroundColor: j%2===0 ? oddRowColor :"#fff" }
+                          { backgroundColor: j%2===0 ? oddRowColor : evenRowColor,
+                            borderBottom: borderStyle === "VH" || borderStyle === "V" ? `1px solid ${headerBgColor}` : "none",
+                            borderLeft: borderStyle === "VH" || borderStyle === "H" ? `1px solid ${headerBgColor}` : "none",
+                            borderRight: borderStyle === "VH" || borderStyle === "H" ? `1px solid ${headerBgColor}` : "none",
+                          }
                         )}
                         
                       >
@@ -255,7 +325,14 @@ function makeRenderer(opts = {}) {
                     //   getClickHandler &&
                     //   getClickHandler(totalAggregator.value(), rowKey, [null])
                     // }
-                    style={colTotalColors(totalAggregator.value())}
+                    style={{
+                      colTotalColors: totalAggregator.value(),
+                      borderBottom: borderStyle === "VH" || borderStyle === "V" ? `1px solid ${headerBgColor}` : "none",
+                      borderLeft: borderStyle === "VH" || borderStyle === "H" ? `1px solid ${headerBgColor}` : "none",
+                      borderRight: borderStyle === "VH" || borderStyle === "H" ? `1px solid ${headerBgColor}` : "none",
+                    
+                    }}
+                    
                   >
                     {totalAggregator.format(totalAggregator.value())}
                   </td>
@@ -355,8 +432,6 @@ class TSVExportRenderer extends React.PureComponent {
 
 TSVExportRenderer.defaultProps = PivotData.defaultProps;
 TSVExportRenderer.propTypes = PivotData.propTypes;
-console.log("PivotData.defaultProps");
-console.log(PivotData.defaultProps);
 export default {
   Table: makeRenderer(),
   'Table Heatmap': makeRenderer({heatmapMode: 'full'}),

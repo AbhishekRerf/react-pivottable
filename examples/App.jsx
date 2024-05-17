@@ -32,7 +32,16 @@ class PivotTableUISmartWrapper extends React.PureComponent {
                 {...this.state.pivotState}
                 onChange={s => this.setState({pivotState: s})}
                 unusedOrientationCutoff={Infinity}
-                options={["#f0575417","#f05754"]}
+                
+                options={{
+                    "HEADER_BG_COLOR":"#2eb27a",
+                    "HEADER_TEXT_COLOR":"#FFF",
+                    "ODD_ROW_COLOR":"#FFF",
+                    "EVEN_ROW_COLOR":"#d7f4e8",
+                    "BORDER_STYLE":"VH",
+                    "BANDED": "YES",
+                    "BANDED_COL": "YES",
+                    }}
             />
         );
     }
@@ -45,20 +54,14 @@ export default class App extends React.Component {
             filename: 'Sample Dataset: Tips',
             pivotState: {
                 data: tips,
-                rows: ['Payer Gender'],
+                rows: ['Payer Gender','Payer Smoker'],
                 cols: ['Party Size'],
                 aggregatorName: 'Count',
-                vals: ['Tip', 'Total Bill'],
+                vals: ['Total Bill'],
+                colOrder: 'value_a_to_z', // Add colOrder
+                rowOrder: 'value_a_to_z', // Add rowOrder
                 rendererName: 'Table',
-                sorters: {
-                    Meal: sortAs(['Lunch', 'Dinner']),
-                    'Day of Week': sortAs([
-                        'Thursday',
-                        'Friday',
-                        'Saturday',
-                        'Sunday',
-                    ]),
-                },
+               
                 plotlyOptions: {width: 900, height: 500},
                 plotlyConfig: {},
                 tableOptions: {
@@ -72,10 +75,37 @@ export default class App extends React.Component {
                         alert(names.join('\n'));
                     },
                 },
+                sortColumn: null,
+                sortOrder: 'asc',
             },
         });
     }
 
+    handleSort(column) {
+        const { sortColumn, sortOrder, pivotState } = this.state;
+        let newSortOrder = 'asc';
+        if (sortColumn === column && sortOrder === 'asc') {
+          newSortOrder = 'desc';
+        }
+      
+        const sortedData = [...pivotState.data].sort((a, b) => {
+          if (a[column] < b[column]) return newSortOrder === 'asc' ? -1 : 1;
+          if (a[column] > b[column]) return newSortOrder === 'asc' ? 1 : -1;
+          return 0;
+        });
+      
+        const updatedPivotState = Object.assign({}, pivotState, { data: sortedData });
+
+  this.setState({
+    pivotState: updatedPivotState,
+    sortColumn: column,
+    sortOrder: newSortOrder,
+  });
+          
+      }
+      
+      
+        
     onDrop(files) {
         this.setState(
             {
@@ -113,44 +143,26 @@ export default class App extends React.Component {
     }
 
     render() {
+        const { sortColumn, sortOrder } = this.state;
+        const { tableOptions } = this.state.pivotState;
+        
+        const updatedTableOptions = Object.assign({}, tableOptions, {
+          sortColumn,
+          sortOrder,
+          onSort: this.handleSort,
+        });
+      
         return (
             <div>
-                <div className="row text-center">
-                    <div className="col-md-3 col-md-offset-3">
-                        <p>Try it right now on a file...</p>
-                        <Dropzone
-                            onDrop={this.onDrop.bind(this)}
-                            accept="text/csv"
-                            className="dropzone"
-                            activeClassName="dropzoneActive"
-                            rejectClassName="dropzoneReject"
-                        >
-                            <p>
-                                Drop a CSV file here, or click to choose a file
-                                from your computer.
-                            </p>
-                        </Dropzone>
-                    </div>
-                    <div className="col-md-3 text-center">
-                        <p>...or paste some data:</p>
-                        <textarea
-                            value={this.state.textarea}
-                            onChange={this.onType.bind(this)}
-                            placeholder="Paste from a spreadsheet or CSV-like file"
-                        />
-                    </div>
-                </div>
-                <div className="row text-center">
-                    <p>
-                        <em>Note: the data never leaves your browser!</em>
-                    </p>
-                    <br />
-                </div>
+                    
                 <div className="row">
                     <h2 className="text-center">{this.state.filename}</h2>
                     <br />
 
-                    <PivotTableUISmartWrapper {...this.state.pivotState} />
+                    <PivotTableUISmartWrapper
+          {...this.state.pivotState}
+          tableOptions={updatedTableOptions}
+        />
                 </div>
             </div>
         );
